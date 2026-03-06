@@ -107,6 +107,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True  # For development; restrict in production
 
+CORS_ALLOWED_ORIGINS = [
+    "https://dinequick-frontend.vercel.app/"
+]
 # REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
