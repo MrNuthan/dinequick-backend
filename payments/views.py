@@ -1,4 +1,4 @@
-import razorpay
+
 from django.conf import settings
 from rest_framework import status
 from rest_framework.views import APIView
@@ -9,6 +9,7 @@ from .serializers import CreateRazorpayOrderSerializer, VerifyPaymentSerializer
 
 
 def get_razorpay_client():
+    import razorpay
     """Lazily create Razorpay client from env variables."""
     return razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
@@ -59,12 +60,10 @@ class CreateRazorpayOrderView(APIView):
 
 
 class VerifyPaymentView(APIView):
-    """
-    POST /api/payments/verify/
-    Verifies a Razorpay payment signature and marks payment as successful.
-    """
 
     def post(self, request):
+        import razorpay
+
         serializer = VerifyPaymentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -85,24 +84,3 @@ class VerifyPaymentView(APIView):
                 {'error': 'Payment verification failed'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-        # Update payment record
-        try:
-            payment = Payment.objects.get(razorpay_order_id=razorpay_order_id)
-            payment.razorpay_payment_id = razorpay_payment_id
-            payment.razorpay_signature = razorpay_signature
-            payment.status = 'successful'
-            payment.save()
-
-            # Update order status
-            order = payment.order
-            order.status = 'completed'
-            order.save()
-
-        except Payment.DoesNotExist:
-            return Response(
-                {'error': 'Payment record not found'},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        return Response({'status': 'Payment successful'})
