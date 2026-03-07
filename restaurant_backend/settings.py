@@ -71,26 +71,25 @@ TEMPLATES = [
 WSGI_APPLICATION = 'restaurant_backend.wsgi.application'
 
 # Database
-# Use PostgreSQL in production (Render) via environment variables.
-# Falls back to SQLite for local development when DB_NAME is not set.
-if os.environ.get('DB_NAME'):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME'),
-            'USER': os.environ.get('DB_USER'),
-            'PASSWORD': os.environ.get('DB_PASSWORD'),
-            'HOST': os.environ.get('DB_HOST'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
-        }
+# This project uses PostgreSQL as the sole database backend.
+# SQLite is NOT supported.
+# PostgreSQL credentials must be configured through the following
+# environment variables (set in Render dashboard or local .env file):
+#   DB_NAME     – PostgreSQL database name
+#   DB_USER     – PostgreSQL user
+#   DB_PASSWORD – PostgreSQL password
+#   DB_HOST     – PostgreSQL host address
+#   DB_PORT     – PostgreSQL port (defaults to 5432)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
