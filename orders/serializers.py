@@ -6,7 +6,7 @@ from tables.models import Table
 
 class OrderItemInputSerializer(serializers.Serializer):
     """Accepts product ID + quantity for order creation."""
-    product = serializers.CharField()
+    product = serializers.IntegerField()
     quantity = serializers.IntegerField(min_value=1)
 
 

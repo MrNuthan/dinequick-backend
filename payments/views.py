@@ -9,8 +9,8 @@ from .serializers import CreateRazorpayOrderSerializer, VerifyPaymentSerializer
 
 
 def get_razorpay_client():
-    import razorpay
     """Lazily create Razorpay client from env variables."""
+    import razorpay
     return razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
 
@@ -56,10 +56,16 @@ class CreateRazorpayOrderView(APIView):
 
         return Response({
             'razorpay_order_id': razorpay_order['id'],
+            'razorpay_key_id': settings.RAZORPAY_KEY_ID,
+            'amount': amount_paise,
         })
 
 
 class VerifyPaymentView(APIView):
+    """
+    POST /api/payments/verify/
+    Verifies Razorpay payment signature and marks the order as completed.
+    """
 
     def post(self, request):
         import razorpay
@@ -80,7 +86,32 @@ class VerifyPaymentView(APIView):
                 'razorpay_signature': razorpay_signature,
             })
         except razorpay.errors.SignatureVerificationError:
+            # Mark payment as failed
+            Payment.objects.filter(
+                razorpay_order_id=razorpay_order_id,
+            ).update(status='failed')
             return Response(
                 {'error': 'Payment verification failed'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        # Signature valid — update Payment record
+        try:
+            payment = Payment.objects.get(razorpay_order_id=razorpay_order_id)
+        except Payment.DoesNotExist:
+            return Response(
+                {'error': 'Payment record not found'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        payment.razorpay_payment_id = razorpay_payment_id
+        payment.razorpay_signature = razorpay_signature
+        payment.status = 'successful'
+        payment.save()
+
+        # Mark the associated order as completed
+        order = payment.order
+        order.status = 'completed'
+        order.save()
+
+        return Response({'status': 'Payment verified successfully'})

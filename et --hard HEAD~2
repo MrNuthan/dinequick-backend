@@ -1,0 +1,16 @@
+[33mc1e7eed[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m updated
+[33mdfaaa44[m payment issue resolved
+[33mbe4c695[m Add Cloudinary media storage for product images
+[33m1fdaaca[m Switch to PostgreSQL only
+[33m5c11916[m Switch database to postgreSQL
+[33m5b50561[m fix migration order
+[33mb87e936[m added cors origin
+[33m626f9ee[m allow vercel frontend domain
+[33md7c5bca[m unwanted files deleted
+[33m11a64e3[m force python 3.11 for render
+[33m32dca3a[m add auto superuser creation
+[33md7afcf8[m create admin automatically
+[33ma65bc0e[m updated views.py
+[33m2342cfc[m Set Python version for Render
+[33m492d1d8[m Fix missing setuptools for razorpay
+[33m7f311de[m Initial backend deployment
