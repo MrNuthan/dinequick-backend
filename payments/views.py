@@ -35,7 +35,7 @@ class CreateRazorpayOrderView(APIView):
             )
 
         # Amount in paise (INR smallest unit)
-        amount_paise = int(order.total_price * 100)
+        amount_paise = int(order.total_amount * 100)
 
         client = get_razorpay_client()
         razorpay_order = client.order.create({
@@ -49,7 +49,7 @@ class CreateRazorpayOrderView(APIView):
             order=order,
             defaults={
                 'razorpay_order_id': razorpay_order['id'],
-                'amount': order.total_price,
+                'amount': order.total_amount,
                 'status': 'created',
             },
         )
