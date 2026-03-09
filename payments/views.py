@@ -1,3 +1,4 @@
+import logging
 
 from django.conf import settings
 from rest_framework import status
@@ -6,6 +7,8 @@ from rest_framework.response import Response
 from orders.models import Order
 from .models import Payment
 from .serializers import CreateRazorpayOrderSerializer, VerifyPaymentSerializer
+
+logger = logging.getLogger(__name__)
 
 
 def get_razorpay_client():
@@ -35,21 +38,28 @@ class CreateRazorpayOrderView(APIView):
             )
 
         # Amount in paise (INR smallest unit)
-        amount_paise = int(order.total_amount * 100)
+        amount_paise = int(order.total_price * 100)
 
-        client = get_razorpay_client()
-        razorpay_order = client.order.create({
-            'amount': amount_paise,
-            'currency': 'INR',
-            'receipt': f'ORD{order.id}',
-        })
+        try:
+            client = get_razorpay_client()
+            razorpay_order = client.order.create({
+                'amount': amount_paise,
+                'currency': 'INR',
+                'receipt': f'ORD{order.id}',
+            })
+        except Exception as e:
+            logger.exception('Razorpay order creation failed')
+            return Response(
+                {'error': f'Razorpay order creation failed: {e}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         # Create or update Payment record
         payment, _ = Payment.objects.update_or_create(
             order=order,
             defaults={
                 'razorpay_order_id': razorpay_order['id'],
-                'amount': order.total_amount,
+                'amount': order.total_price,
                 'status': 'created',
             },
         )
